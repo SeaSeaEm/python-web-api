@@ -1,4 +1,5 @@
 from services.nfs_services import NfsServices
+from model.nfs import *
 
 import flask
 from flask import request, jsonify
@@ -6,7 +7,6 @@ from flask import request, jsonify
 
 def main():
     app = flask.Flask(__name__)
-
     nfs_services = NfsServices()
 
     # A route to return all of the available entries in our catalog.
@@ -16,23 +16,37 @@ def main():
 
         return jsonify(result)
 
-    @app.route('/api/nfs/single', methods=['GET'])
+    @app.route('/api/nfs/single', methods=['POST'])
     def api_id():
-        # Check if an ID was provided as part of the URL.
-        # If ID is provided, assign it to a variable.
-        # If no ID is provided, display an error in the browser.
-        id = 0
+        obj = request.json
+        print(obj)
 
-        if 'id' in request.args:
-            id = int(request.args['id'])
-        else:
-            return "Error: No id field provided. Please specify an id."
+        result = nfs_services.GetById(obj["uuid"])
 
-        result = nfs_services.GetSingle(id)
+        import json
+        return json.dumps(result, default=str)
 
-        # Use the jsonify function from Flask to convert our list of
-        # Python dictionaries to the JSON format.
-        return jsonify(result)
+    @app.route('/api/nfs', methods=['POST'])
+    def api_post():
+        obj = request.json
+        import uuid 
+
+        quotas = Quota(value=obj["quotas"]["value"],
+                       amount=obj["quotas"]["amount"])
+        nfs = Nfs(id=str(uuid.uuid1()), number=obj["number"],
+                  name=obj["name"], quotas=quotas.__dict__)
+                  
+        data = nfs.__dict__
+        print(data)
+
+        nfs_services.Add(data)
+
+        result = nfs_services.GetById(nfs.id)
+        import json
+        result = json.dumps(result, default=str)
+        print(result)
+
+        return result
 
     app.run()
 
