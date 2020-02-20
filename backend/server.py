@@ -21,7 +21,7 @@ def main():
     def api_all():
         result = nfs_services.GetAllNfs()
 
-        return jsonify(result)
+        return jsonify(result), 200
 
     @app.route('/api/nfs/single', methods=['POST'])
     @cross_origin()
@@ -30,7 +30,7 @@ def main():
 
         result = nfs_services.GetById(obj["uuid"])
 
-        return json.dumps(result, default=str)
+        return json.dumps(result, default=str), 200
 
     @app.route('/api/nfs', methods=['POST'])
     @cross_origin()
@@ -49,9 +49,9 @@ def main():
         result = nfs_services.GetById(nfs.id)
 
         if result is not None:
-            return {"status": "success"}
+            return {"status": "success"}, 200
 
-        return {"status": "failed"}
+        return {"status": "failed"}, 400
 
     app.run()
 
